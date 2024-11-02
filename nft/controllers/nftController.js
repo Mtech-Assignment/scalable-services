@@ -1,6 +1,5 @@
 const { PinataSDK } = require('pinata-web3');
 const nftService = require('../services/nftService');
-const User = require('../models/NFT');
 const fs = require('fs');
 const { Blob } = require("buffer");
 require('dotenv').config();
@@ -72,29 +71,18 @@ exports.getUserOwnedNFTOnMarketplace = async (req, res) => {
     }
 }
 
-exports.userTransactions = async (req, res) => {
-    const { userId } = req.params;
-    try {
-        // Fetch user and decrypt the mnemonic
-        const user = await User.findById(req.user.id);
-        if (!user || user.id !== userId) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        console.log("Getting transactions for user "+ JSON.stringify(user));
-        console.log();
-
-        const userWallet = await getUserWallet(user);
-        const userTxns = await nftService.getUserTransactions(userWallet.address);
-        res.status(201).json({ success: true, transactions: userTxns.result });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-}
-
 exports.burnNFT = async (req, res) => {
     const { nftId } = req.params;
     const authToken = req.headers.authorization?.split(' ')[1];
     try {
+        const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
+        let user = await (await fetch(authServiceUrl, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+            },
+        })).json();
 
         const userWallet = await nftService.getUserWallet(authToken);
         await nftService.burnNFT(userWallet, nftId);

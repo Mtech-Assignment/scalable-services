@@ -11,7 +11,7 @@ router.post('/wallet', walletController.createWallet);
 router.get('/:userId/wallet', authenticateJWT, walletController.getWallet);
 
 // GET to retrieve user details from JWT
-router.get('/:userId', authenticateJWT, userController.getUserInfo);
+router.get('/', authenticateJWT, userController.getUserInfo);
 
 // GET to retrieve wallet seed phrase (internal API endpoint for other microservice)
 router.get('/wallet', authenticateJWT, walletController.getWalletMnemonic);
