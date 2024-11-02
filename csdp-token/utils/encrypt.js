@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 require('dotenv').config();
 
@@ -17,25 +16,6 @@ const encryptionIV = crypto
   .digest('hex')
   .substring(0, 16);
 
-// Hash password
-exports.hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(10);
-    return bcrypt.hash(password, salt);
-};
-
-// Compare hashed password
-exports.comparePassword = async (password, hashedPassword) => {
-    return bcrypt.compare(password, hashedPassword);
-};
-
-// Encrypt mnemonic
-exports.encryptMnemonic = (mnemonic) => {
-    const cipher = crypto.createCipheriv(algorithm, key, encryptionIV);
-    // initialization vector ensures uniqueness of the encryption
-    return Buffer.from(
-        cipher.update(mnemonic, 'utf8', 'hex') + cipher.final('hex')
-      ).toString('base64') // Encrypts data and converts to hex and base64 // Returning encrypted mnemonic and IV
-};
 
 // Decrypt mnemonic
 exports.decryptMnemonic = (encryptedMnemonic) => {
