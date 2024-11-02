@@ -68,3 +68,22 @@ exports.isTokenValid = async ({ token }) => {
 
     return { is_token_valid: true };
 };
+
+// verifies a given jwt
+exports.isTokenValid = async ({ token }) => {
+    if (!token) {
+        return { is_token_valid: false };
+    }
+
+    const tokenPayload = jwt.verify(token, config.jwtSecret);
+
+    if (tokenPayload) {
+        const username = tokenPayload.username
+        const user = await User.findOne({ username });
+        if (!user) {
+            return { is_token_valid: false };
+        }
+    }
+
+    return { is_token_valid: true };
+};
