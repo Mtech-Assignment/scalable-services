@@ -11,6 +11,6 @@ router.post('/approve', authenticateJWT, tokenController.doPayment);
 router.get('/balance', authenticateJWT, tokenController.getBalance);
 
 // Get previous transactions
-// router.get('/transaction', tokenController.userTransactions);
+router.get('/transaction', authenticateJWT, tokenController.userTransactions);
 
 module.exports = router;
