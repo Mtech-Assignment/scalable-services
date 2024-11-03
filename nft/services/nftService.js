@@ -67,6 +67,13 @@ exports.mintNFT = async function({ name, price, description, fileUploadUrl, toke
     return { nft_minted: true, tokenid: tokenId };
 };
 
+exports.approveNftToMarketplace = async function(userWallet, nftId) {
+    const wallet = new ethers.Wallet(userWallet.privateKey, provider);
+    const nftContractWithSigner = nftContract.connect(wallet);
+    const nftApproveTxn = await nftContractWithSigner.approve(process.env.nftMarketplaceAddress, nftId);
+    await nftApproveTxn.wait();
+}
+
 exports.getNftDetail = async function(nftId) {
     const tokenInfo = await NFT.findOne({ tokenId: nftId });
     return { nft_info: tokenInfo };

@@ -96,3 +96,29 @@ exports.burnNFT = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     } 
 }
+
+exports.approveNft = async function (req, res) {
+    const { nftId } = req.params;
+    const authToken = req.headers.authorization?.split(' ')[1];
+    try {
+        const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
+        let user = await (await fetch(authServiceUrl, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+            },
+        })).json();
+
+        const userWallet = await nftService.getUserWallet(authToken);
+        await nftService.approveNftToMarketplace(userWallet, nftId);
+        console.log(`Approved NFT with tokenId ${nftId} of user ${JSON.stringify(user)}`);
+        console.log();
+
+        res.status(201).json({ success: true, transactions: {
+            nft_approved: nftId
+        } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    } 
+}
