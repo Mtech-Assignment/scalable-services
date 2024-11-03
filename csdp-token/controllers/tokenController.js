@@ -30,9 +30,9 @@ exports.doPayment = async (req, res) => {
         const wallet = await tokenService.getUserWallet(token);
 
         await tokenService.approveToken(amount, wallet);
-        res.status(200).json({ success: true });
+        return res.status(200).json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -49,9 +49,9 @@ exports.userTransactions = async (req, res) => {
 
         const userWallet = await tokenService.getUserWallet(token);
         const userTxns = await tokenService.getUserTransactions(userWallet.address);
-        res.status(201).json({ success: true, transactions: userTxns.result });
+        return res.status(201).json({ success: true, transactions: userTxns.result });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
