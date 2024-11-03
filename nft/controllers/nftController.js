@@ -43,9 +43,9 @@ exports.mintNFT = async (req, res) => {
         const nftTx = await nftService.mintNFT({ name, price, description, fileUploadUrl, tokenURI, userAddress }, wallet);
 
         // fs.unlinkSync(req.file.path);  // delete the file as it's processed
-        res.status(201).json({ success: true, transaction: nftTx });
+        return res.status(201).json({ success: true, transaction: nftTx });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -53,9 +53,9 @@ exports.getNftDetail = async (req, res) => {
     const { nftId } = req.params;
     try {
         const getSpecificNftDetailsTxn = await nftService.getNftDetail(nftId);
-        res.status(201).json({ success: true, result: getSpecificNftDetailsTxn });
+        return res.status(201).json({ success: true, result: getSpecificNftDetailsTxn });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -65,9 +65,9 @@ exports.getUserOwnedNFTOnMarketplace = async (req, res) => {
         const wallet = await nftService.getUserWallet(authToken);
 
         const userOwnedNfts = await nftService.getUserOwnedNFTs(wallet);
-        res.status(200).json({ success: true, userOwnedNfts });
+        return res.status(200).json({ success: true, userOwnedNfts });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -89,11 +89,11 @@ exports.burnNFT = async (req, res) => {
         console.log(`Burned NFT with tokenId ${nftId} of user ${JSON.stringify(user)}`);
         console.log();
 
-        res.status(201).json({ success: true, transactions: {
+        return res.status(201).json({ success: true, transactions: {
             nft_burned: nftId
         } });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     } 
 }
 
@@ -115,10 +115,10 @@ exports.approveNft = async function (req, res) {
         console.log(`Approved NFT with tokenId ${nftId} of user ${JSON.stringify(user)}`);
         console.log();
 
-        res.status(201).json({ success: true, transactions: {
+        return res.status(201).json({ success: true, transactions: {
             nft_approved: nftId
         } });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     } 
 }

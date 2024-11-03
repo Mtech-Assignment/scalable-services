@@ -1,5 +1,5 @@
 // map the item represented as array to object
-exports.mapNftItemToObject = (items) => {
+exports.mapMarketplaceItemToObject = (items) => {
     const nftItemProperties = ["itemId", "nftContract", "tokenId", "seller", "owner", "price", "sold"];
     items = items.map((nft) => {
         let nftItemObj = {};

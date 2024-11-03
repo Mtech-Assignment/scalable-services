@@ -1,5 +1,4 @@
 const express = require('express');
-const { PinataSDK } = require('pinata-web3');
 const cors = require('cors');
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -9,7 +8,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3013;
 
 // Enable CORS for all routes
 app.use(cors());
