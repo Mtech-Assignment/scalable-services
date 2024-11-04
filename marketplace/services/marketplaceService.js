@@ -3,6 +3,7 @@ const { jsonRpcProvider } = require('../config/config');
 const mktplaceContractABI = require('../abi/NFTMarketplace.json');
 const { decryptMnemonic } = require('../utils/encrypt');
 const MarketplaceItem = require('../models/MarketplaceItem');
+const Transaction = require('../models/Transaction');
 
 require('dotenv').config();
 
@@ -33,18 +34,6 @@ async function getMarketplaceListingPrice(wallet) {
     const contractWithSigner = marketplaceContract.connect(wallet);
     const listingPriceTxn = await contractWithSigner.getListingPrice();
     return listingPriceTxn;
-}
-
-async function approveNftToMarketplace(tokenId, token) {
-    const nftServiceUrl = `${process.env.NFT_SERVICE}/nft/${tokenId}/approve`;
-    let nftApprovalResult = await (await fetch(nftServiceUrl, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        }
-    })).json();
-    return nftApprovalResult;
 }
 
 exports.getUserWallet = async (authToken) => {
@@ -126,6 +115,9 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
         );
         await listedItem.save();
 
+        const listingTransaction = new Transaction({ username: listingUser.username, itemId: listedItem._id, type: 'List', price: 0.025 });
+        await listingTransaction.save();
+
         return { nft_listed: true, listed_item: listedItem };
     } else {
         return { nft_listed: false, message: "NFT doesn't belong to the user listing it" };
@@ -162,6 +154,9 @@ exports.buyItem = async function(marketplaceItemId, token, buyer) {
             }
         );
 
+        const buyingTransaction = new Transaction({ username: buyer.username, itemId: buyingItem._id, type: 'Buy', price: buyingItem.price });
+        await buyingTransaction.save();
+
         const nftInfo = await exports.getNftDetail(buyingItem.tokenId, token);
 
         // TODO: CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
@@ -194,6 +189,9 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
                 upsert: true,
             }
         );
+
+        const resellTransaction = new Transaction({ username: reseller.username, itemId: itemInfo._id, type: 'Resell', price: 0.025 });
+        await resellTransaction.save();
         return { item_listed: true, listed_item: resellItem };
 
         // TODO: change price of the nft by sending the event to nft service
@@ -202,12 +200,10 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
     }
 };
 
-// exports.getUserTransactions = async function(userAddress) {
-//     const etherscanUrl = `https://api-holesky.etherscan.io/api?module=account&action=txlist&address=${userAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`;
-
-//     const txns = await fetch(etherscanUrl);
-//     return await txns.json();
-// };
+exports.getUserTransactions = async function(username) {
+    const userTxns = Transaction.find({ username });
+    return userTxns;
+};
 
 exports.removeItemFromMarketplace = async function(itemId, owner) {
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);

@@ -1,7 +1,5 @@
-const MarketplaceItem = require('../models/MarketplaceItem');
 const marketplaceService = require('../services/marketplaceService');
 require('dotenv').config();
-
 
 async function getUserInfo(authToken) {
     const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
@@ -105,8 +103,6 @@ exports.buyItem = async (req, res) => {
         console.log("Buying NFT from user: "+ JSON.stringify(user));
         console.log();
 
-        // const wallet = await marketplaceService.getUserWallet(authToken);
-
         const tx = await marketplaceService.buyItem(itemId, authToken, user);
 
         if (!tx.nft_bought) {
@@ -144,24 +140,25 @@ exports.resellItem = async (req, res) => {
     }
 };
 
-// exports.userTransactions = async (req, res) => {
-//     const { userId } = req.params;
-//     try {
-//         // Fetch user and decrypt the mnemonic
-//         const user = await User.findById(req.user._id);
-//         if (!user || user._id !== userId) {
-//             return res.status(404).json({ success: false, message: 'User not found' });
-//         }
-//         console.log("Getting transactions for user "+ JSON.stringify(user));
-//         console.log();
+exports.userTransactions = async (req, res) => {
+    const { userId } = req.params;
+    const authToken = req.headers.authorization?.split(' ')[1];
 
-//         const userWallet = await getUserWallet(user);
-//         const userTxns = await marketplaceService.getUserTransactions(userWallet.address);
-//         res.status(201).json({ success: true, transactions: userTxns.result });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: error.message });
-//     }
-// }
+    try {
+        // Fetch user and decrypt the mnemonic
+        const user = await getUserInfo(authToken);
+        if (!user || user._id !== userId) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        console.log("Getting transactions for user "+ JSON.stringify(user));
+        console.log();
+
+        const userTxns = await marketplaceService.getUserTransactions(user.username);
+        res.status(200).json({ success: true, transactions: userTxns });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
 
 exports.unlistItem = async (req, res) => {
     const { itemId } = req.params;

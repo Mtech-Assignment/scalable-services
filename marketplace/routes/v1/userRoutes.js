@@ -4,7 +4,7 @@ const authenticateJWT = require('../../middleware/auth');
 const marketplaceController = require('../../controllers/marketplaceController');
 
 // Get the user transactions
-// router.get('/:userId/transactions', authenticateJWT, nftController.userTransactions);
+router.get('/:userId/transactions', authenticateJWT, marketplaceController.userTransactions);
 
 // Get user owned nft or user listed nft if listed=true query param is available 
 router.get('/:userId/item', authenticateJWT, (req, res, next) => { 
