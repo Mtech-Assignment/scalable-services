@@ -1,21 +1,20 @@
 const mongoose = require('mongoose');
 
 const itemSchema = new mongoose.Schema({
-    itemId: {
-        type: Number,
-        required: true,
-        unique: true,
-    },
     tokenId: {
         type: String,
         required: true,
         unique: true
     },
-    seller: {
-        type: String,
+    isOnSale: {
+        type: Boolean,
         required: true
     },
     owner: {
+        type: String,
+        required: true
+    },
+    ownerAddress: {
         type: String,
         required: true
     },

@@ -76,8 +76,8 @@ exports.getUserOwnedNFTOnMarketplace = async (req, res) => {
     try {
         // Fetch user and decrypt the mnemonic
         const user = await getUserInfo(authToken);
-
-        const wallet = await nftService.getUserWallet(authToken);
+        console.log(`Getting user owned NFT for user ${JSON.stringify(user)}`);
+        console.log();
 
         const userOwnedNfts = await nftService.getUserOwnedNFTs(user.username);
         return res.status(200).json({ success: true, userOwnedNfts });

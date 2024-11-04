@@ -1,14 +1,22 @@
 const { ethers } = require('ethers');
 const { jsonRpcProvider } = require('../config/config');
 const mktplaceContractABI = require('../abi/NFTMarketplace.json');
-const { mapMarketplaceItemToObject } = require('../utils/marketplaceItem');
 const { decryptMnemonic } = require('../utils/encrypt');
+const MarketplaceItem = require('../models/MarketplaceItem');
+
 require('dotenv').config();
 
 // Create a new instance of the contract
 const marketplaceContract = new ethers.Contract(process.env.nftMarketplaceAddress, mktplaceContractABI.abi, jsonRpcProvider);
 
-async function approveToken(token, amount) {
+async function makePayment(token, amount, receiver) {
+    const reqBody = {
+        amount: amount,
+    };
+
+    if(receiver) {
+        reqBody.receiver = receiver;
+    }
     const paymentServiceUrl = `${process.env.PAYMENT_SERVICE}/approve`;
     let paymentResult = await (await fetch(paymentServiceUrl, {
         method: "POST",
@@ -16,9 +24,7 @@ async function approveToken(token, amount) {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          amount: amount
-        }),
+        body: JSON.stringify(reqBody),
     })).json();
     return paymentResult;
 }
@@ -67,67 +73,63 @@ exports.getUserWallet = async (authToken) => {
 }
 
 exports.getParticularMarketplaceItem = async function (itemId) {
-    let mktplaceItem = await marketplaceContract.getParticularItem(itemId);
-    mktplaceItem = mapMarketplaceItemToObject([mktplaceItem]);
-    console.log("Getting particular marketplace item with id : "+ itemId);
+    const mktplaceItem = await MarketplaceItem.findById(itemId);
+    console.log(`Getting particular marketplace item with id : ${itemId} is ${JSON.stringify(mktplaceItem)}` );
     console.log();
-    return mktplaceItem[0];
+    return mktplaceItem;
 }
 
-exports.getUserListedItems = async (userWallet) => {
-    const wallet = new ethers.Wallet(userWallet.privateKey, jsonRpcProvider);
-    const contractWithSigner = marketplaceContract.connect(wallet);
-    let nftListedByUser = await contractWithSigner.getSellerListedItems();
-    nftListedByUser = mapMarketplaceItemToObject(nftListedByUser);
-    console.log("User Owned NFT on marketplace : ", nftListedByUser);
+exports.getUserListedItems = async (userName) => {
+    const nftListedByUser = await MarketplaceItem.find({ owner: userName, isOnSale: true });
+    console.log("User Listed NFT on marketplace : ", nftListedByUser);
     console.log();
     return { listed_nfts: nftListedByUser };
 }
 
 exports.getAllListedItems = async function() {
-    let allListedItemOnMarketplace = await marketplaceContract.getAllListedItems();
-    allListedItemOnMarketplace = mapMarketplaceItemToObject(allListedItemOnMarketplace);
-    console.log("Listed items on marketplace : ", allListedItemOnMarketplace);
+    const listedItems = await MarketplaceItem.find({ isOnSale: true, sold: false });
+    console.log("Listed items on marketplace : ", listedItems);
     console.log();
-    return { listed_items: allListedItemOnMarketplace };
+    return { listed_items: listedItems };
 }
 
-exports.getUserOwnedItems = async function(userWallet) {
-    const wallet = new ethers.Wallet(userWallet.privateKey, jsonRpcProvider);
-    const contractWithSigner = marketplaceContract.connect(wallet);
-    let userOwnedItems = await contractWithSigner.getOwnerListedItems();
-    userOwnedItems = mapMarketplaceItemToObject(userOwnedItems);
+exports.getUserOwnedItems = async function(userName, token) {
+    let userOwnedItems = await MarketplaceItem.find({ owner: userName });
+    userOwnedItems = await Promise.all(userOwnedItems.map(async (item) => {
+        return {
+            item_id: item._id,
+            item: await exports.getNftDetail(item.tokenId, token)
+        }}
+    ));
     console.log("User owned item on marketplace : ", userOwnedItems);
     console.log();
     return { owned_nft_items: userOwnedItems };
 }
 
-exports.listNFT = async function(nftId, listingPrice, listerWallet, token) {
+exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
     const wallet = new ethers.Wallet(listerWallet.privateKey, jsonRpcProvider);
-    const contractWithSigner = marketplaceContract.connect(wallet);
     const mktplaceListingPrice = await getMarketplaceListingPrice(wallet);
     console.log("Marketplace Listing price of item is : " + mktplaceListingPrice);
     console.log();
 
-    await approveToken(token, mktplaceListingPrice.toString());
-    console.log("CSDP Token approved for listing the item successfully");
+    const nftInfo = await exports.getNftDetail(tokenId, token);
+    console.log(`NFT Info with tokenid ${tokenId} ${JSON.stringify(nftInfo)}`);
     console.log();
+    
+    if (nftInfo.owner === listingUser.username) {
+        await makePayment(token, mktplaceListingPrice.toString());
+        console.log("Payment done for listing the item successfully");
+        console.log();
 
-    const eventPromise = new Promise((resolve, _) => {
-        marketplaceContract.once('ItemList', (mktPlaceItemId) => {
-            resolve(mktPlaceItemId);
-        });
-    });
+        const listedItem = new MarketplaceItem(
+            { tokenId, isOnSale: true, owner: nftInfo.owner, ownerAddress: listingUser.address, price: nftInfo.price, sold: false }
+        );
+        await listedItem.save();
 
-    const listNFTTx = await contractWithSigner.listItem(
-        process.env.nftAddress,
-        nftId,
-        ethers.parseUnits(listingPrice.toString(), 18)
-    );
-    await listNFTTx.wait();
-
-    let marketplaceItemId = Number(await eventPromise);
-    return { nft_listed: true, listed_itemid: marketplaceItemId };
+        return { nft_listed: true, listed_item: listedItem };
+    } else {
+        return { nft_listed: false, message: "NFT doesn't belong to the user listing it" };
+    }
 };
 
 exports.getNftDetail = async function(tokenId, token) {
@@ -142,57 +144,78 @@ exports.getNftDetail = async function(tokenId, token) {
     return nftApprovalResult.result.nft_info;
 }
 
-exports.buyItem = async function(marketplaceItemId, buyerWallet, token) {
-    const wallet = new ethers.Wallet(buyerWallet.privateKey, jsonRpcProvider);
-    const contractWithSigner = marketplaceContract.connect(wallet);
-    const marketplaceItem = await marketplaceContract.getParticularItem(marketplaceItemId);
-    
-    await approveToken(token, marketplaceItem.price.toString());
-    console.log("Token CSDP Approved for buying NFT with price "+marketplaceItem.price+" CSDP");
-    console.log();
+exports.buyItem = async function(marketplaceItemId, token, buyer) {
+    // const wallet = new ethers.Wallet(buyerWallet.privateKey, jsonRpcProvider);
+    const buyingItem = await exports.getParticularMarketplaceItem(marketplaceItemId);
 
-    const tx = await contractWithSigner.buyItem(process.env.nftAddress, marketplaceItemId);
-    await tx.wait(); // Wait for the transaction to be mined
-    return { nft_bought: true };
+    if (buyingItem && !buyingItem.sold && buyingItem.isOnSale) {
+        await makePayment(token, buyingItem.price.toString(), buyingItem.ownerAddress);
+        console.log("Payment Done for buying NFT with price "+buyingItem.price+" CSDP");
+        console.log();
+
+        await MarketplaceItem.findOneAndUpdate(
+            { tokenId: buyingItem.tokenId },
+            { tokenId: buyingItem.tokenId, isOnSale: false, owner: buyer.username, ownerAddress: buyer.address, price: buyingItem.price, sold: true },
+            {
+                new: true,
+                upsert: true,
+            }
+        );
+
+        const nftInfo = await exports.getNftDetail(buyingItem.tokenId, token);
+
+        // TODO: CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
+
+        return { nft_bought: true, nft: nftInfo };
+    } else {
+        return { nft_bought: false, message: "Item is not on sale" };
+    }
+
 };
 
-exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token) {
+exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, reseller) {
     const wallet = new ethers.Wallet(resellerWallet.privateKey, jsonRpcProvider);
-    const mktPlaceContractWithSigner = marketplaceContract.connect(wallet);
     const mktplaceListingPrice = await getMarketplaceListingPrice(wallet);
     console.log("Marketplace Listing price of item is : " + mktplaceListingPrice);
     console.log();
 
-    await approveToken(token, mktplaceListingPrice.toString());
-    console.log("CSDP Token amount for relisting is approved for Marketplace");
-    console.log();
+    const itemInfo = await exports.getParticularMarketplaceItem(itemId);
+    
+    if (itemInfo && itemInfo.owner === reseller.username) {
+        await makePayment(token, mktplaceListingPrice.toString());
+        console.log("Payment done for listing the item successfully");
+        console.log();
 
-    const marketplaceItem = await exports.getParticularMarketplaceItem(itemId);
+        const resellItem = await MarketplaceItem.findOneAndUpdate(
+            { tokenId: itemInfo.tokenId },
+            { tokenId: itemInfo.tokenId, isOnSale: true, owner: itemInfo.owner, ownerAddress: reseller.address, price: resellPrice, sold: false },
+            {
+                new: true,
+                upsert: true,
+            }
+        );
+        return { item_listed: true, listed_item: resellItem };
 
-    await approveNftToMarketplace(marketplaceItem.tokenId, token);
-    console.log("Item Approval to marketplace for relisting done successfully");
-    console.log();
-
-    const resellItemTx = await mktPlaceContractWithSigner.resellItem(
-        process.env.nftAddress,
-        itemId,
-        ethers.parseUnits(resellPrice.toString(), 18)
-    );
-    await resellItemTx.wait();
-
-    return { item_listed: true };
+        // TODO: change price of the nft by sending the event to nft service
+    } else {
+        return { item_listed: false, message: "Item doesn't belong to the user reselling it" };
+    }
 };
 
-exports.getUserTransactions = async function(userAddress) {
-    const etherscanUrl = `https://api-holesky.etherscan.io/api?module=account&action=txlist&address=${userAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`;
+// exports.getUserTransactions = async function(userAddress) {
+//     const etherscanUrl = `https://api-holesky.etherscan.io/api?module=account&action=txlist&address=${userAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`;
 
-    const txns = await fetch(etherscanUrl);
-    return await txns.json();
-};
+//     const txns = await fetch(etherscanUrl);
+//     return await txns.json();
+// };
 
-exports.removeItemFromMarketplace = async function(userWallet, itemId) {
-    const wallet = new ethers.Wallet(userWallet.privateKey, jsonRpcProvider);
-    const mktPlaceContractWithSigner = marketplaceContract.connect(wallet);
-    const marketplaceItemDeletionTxn = await mktPlaceContractWithSigner.unlistItem(itemId); 
-    await marketplaceItemDeletionTxn.wait();
+exports.removeItemFromMarketplace = async function(itemId, owner) {
+    const itemInfo = await exports.getParticularMarketplaceItem(itemId);
+    
+    if (itemInfo && itemInfo.owner === owner.username) {
+        await MarketplaceItem.deleteOne({ _id: itemInfo._id });
+    } else {
+        return { item_removed: false, message: "Item doesn't belong to the user removing it" };
+    }
+    return { item_removed: true };
 }

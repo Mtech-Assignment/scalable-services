@@ -1,5 +1,5 @@
-const marketplaceService = require('../services/marketplaceService');
 const MarketplaceItem = require('../models/MarketplaceItem');
+const marketplaceService = require('../services/marketplaceService');
 require('dotenv').config();
 
 
@@ -34,12 +34,11 @@ exports.getUserOwnedItemOnMarketplace = async (req, res) => {
         if (!user || user._id !== userId) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        const wallet = await marketplaceService.getUserWallet(authToken);
 
-        const userOwnedNfts = await marketplaceService.getUserOwnedItems(wallet);
-        res.status(200).json({ success: true, userOwnedNfts });
+        const userOwnedNfts = await marketplaceService.getUserOwnedItems(user.username, authToken);
+        return res.status(200).json({ success: true, userOwnedNfts });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -53,17 +52,16 @@ exports.getUserListedItemOnMarketplace = async (req, res) => {
         if (!user || userId !== user._id) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        const wallet = await marketplaceService.getUserWallet(authToken);
 
-        const userListedItems = await marketplaceService.getUserListedItems(wallet);
-        res.status(200).json({ success: true, listed_items: userListedItems });
+        const userListedItems = await marketplaceService.getUserListedItems(user.username);
+        return res.status(200).json({ success: true, listed_items: userListedItems });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
 exports.listItemOnMarketplace = async (req, res) => {
-    const { nft_id, listing_price } = req.body;
+    const { nft_id } = req.body;
     const authToken = req.headers.authorization?.split(' ')[1];
 
     try {
@@ -76,21 +74,20 @@ exports.listItemOnMarketplace = async (req, res) => {
         console.log();
 
         const userWallet = await marketplaceService.getUserWallet(authToken);
-        const listNFTTxRes = await marketplaceService.listNFT(nft_id, listing_price, userWallet, authToken);
-        res.status(201).json({ success: true, transaction: listNFTTxRes });
+        const listNFTTxRes = await marketplaceService.listNFT(nft_id, userWallet, authToken, user);
+        return res.status(201).json({ success: true, transaction: listNFTTxRes });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
 exports.getItemDetail = async (req, res) => {
     const { itemId } = req.params;
     try {
-        const markteplaceItem = await marketplaceService.getParticularMarketplaceItem(itemId);
-        const getSpecificNftDetailsTxn = await marketplaceService.getNftDetail(markteplaceItem.tokenId);
-        res.status(200).json({ success: true, result: getSpecificNftDetailsTxn });
+        const marketplaceItem = await marketplaceService.getParticularMarketplaceItem(itemId);
+        return res.status(200).json({ success: true, result: marketplaceItem });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -108,12 +105,16 @@ exports.buyItem = async (req, res) => {
         console.log("Buying NFT from user: "+ JSON.stringify(user));
         console.log();
 
-        const wallet = await marketplaceService.getUserWallet(authToken);
+        // const wallet = await marketplaceService.getUserWallet(authToken);
 
-        const tx = await marketplaceService.buyItem(itemId, wallet, authToken);
-        res.status(200).json({ success: true, transaction: tx });
+        const tx = await marketplaceService.buyItem(itemId, authToken, user);
+
+        if (!tx.nft_bought) {
+            return res.status(404).json({ success: false, message: tx.message });
+        }
+        return res.status(200).json({ success: true, transaction: tx });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -129,14 +130,17 @@ exports.resellItem = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        console.log("ReListing Item from user: "+ JSON.stringify(user));
+        console.log("Relisting Item from user: "+ JSON.stringify(user));
         console.log();
 
         const sellerWallet = await marketplaceService.getUserWallet(authToken);
-        const tx = await marketplaceService.resellNFT(itemId, resell_price, sellerWallet, authToken);
-        res.status(201).json({ success: true, transaction: tx });
+        const tx = await marketplaceService.resellNFT(itemId, resell_price, sellerWallet, authToken, user);
+        if (tx && !tx.item_listed) {
+            return res.status(402).json({ success: false, message: tx.message });
+        }
+        return res.status(201).json({ success: true, transaction: tx });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -169,9 +173,7 @@ exports.unlistItem = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const userWallet = await marketplaceService.getUserWallet(authToken);
-
-        await marketplaceService.removeItemFromMarketplace(userWallet, itemId)
+        await marketplaceService.removeItemFromMarketplace(itemId, user)
         console.log("Removed NFT from Marketplace "+ JSON.stringify(user));
         console.log();
 

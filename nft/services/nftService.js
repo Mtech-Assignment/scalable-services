@@ -39,7 +39,7 @@ exports.getUserOwnedNFTs = async function(userName) {
     const userOwnedNFTs = await NFT.find({ owner: userName });
     console.log("User Owned NFT on marketplace : ", userOwnedNFTs);
     console.log();
-    return { owned_nft_items: userOwnedNFTs };
+    return { owned_nfts: userOwnedNFTs };
 }
 
 exports.mintNFT = async function({ name, price, description, tokenURI, userName }) {
