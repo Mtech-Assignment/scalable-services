@@ -35,36 +35,18 @@ exports.getUserWallet = async (authToken) => {
     return wallet;
 }
 
-exports.getUserOwnedNFTs = async function(userWallet) {
-    const userOwnedNFTs = await NFT.find({ owner: userWallet.address });
+exports.getUserOwnedNFTs = async function(userName) {
+    const userOwnedNFTs = await NFT.find({ owner: userName });
     console.log("User Owned NFT on marketplace : ", userOwnedNFTs);
     console.log();
     return { owned_nft_items: userOwnedNFTs };
 }
 
-exports.mintNFT = async function({ name, price, description, fileUploadUrl, tokenURI, userAddress }, userWallet) {
-    // Create a wallet instance using the private key
-    const wallet = new ethers.Wallet(userWallet.privateKey, provider);
-    const contractWithSigner = nftContract.connect(wallet); // Connect the contract to the wallet
-    let tokenId = null;
-
-    const eventPromise = new Promise((resolve, _) => {
-        nftContract.once('Transfer', (_, to, tokenId) => {
-            resolve(tokenId);
-        });
-    });
-    
-    // Call the mint function without specifying the user address
-    const tx = await contractWithSigner.mintToken(tokenURI);
-    await tx.wait(); // Wait for the transaction to be mined
-    
-    tokenId = Number(await eventPromise);
-
+exports.mintNFT = async function({ name, price, description, tokenURI, userName }) {
     // save it to db
-    const newNFT = new NFT({ tokenId, name, price, description, image_url: fileUploadUrl, owner: userAddress });
+    const newNFT = new NFT({ name, price, description, tokenDetailURI: tokenURI, owner: userName });
     await newNFT.save();
-
-    return { nft_minted: true, tokenid: tokenId };
+    return { nft_minted: true, tokenid: newNFT._id };
 };
 
 exports.approveNftToMarketplace = async function(userWallet, nftId) {
@@ -75,13 +57,10 @@ exports.approveNftToMarketplace = async function(userWallet, nftId) {
 }
 
 exports.getNftDetail = async function(nftId) {
-    const tokenInfo = await NFT.findOne({ tokenId: nftId });
+    const tokenInfo = await NFT.findById(nftId);
     return { nft_info: tokenInfo };
 }
 
-exports.burnNFT = async function(userWallet, nftId) {
-    const wallet = new ethers.Wallet(userWallet.privateKey, provider);
-    const nftContractWithSigner = nftContract.connect(wallet);
-    await nftContractWithSigner.burn(nftId);
-    await NFT.deleteOne({ tokenId: nftId });
+exports.burnNFT = async function(nftId) {
+    await NFT.deleteOne({ _id: nftId });
 }

@@ -4,6 +4,17 @@ const fs = require('fs');
 const { Blob } = require("buffer");
 require('dotenv').config();
 
+async function getUserInfo(authToken) {
+    const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
+    let user = await (await fetch(authServiceUrl, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+        },
+    })).json();
+    return user.user;
+}
 
 // Mint an NFT
 exports.mintNFT = async (req, res) => {
@@ -19,7 +30,9 @@ exports.mintNFT = async (req, res) => {
     const authToken = req.headers.authorization?.split(' ')[1];
 
     try {
-        const wallet = await nftService.getUserWallet(authToken);
+        // Fetch user and decrypt the mnemonic
+        const user = await getUserInfo(authToken);
+
         const blob = new Blob([fs.readFileSync(req.file.path)]);
         
         // upload a file to ipfs
@@ -38,11 +51,10 @@ exports.mintNFT = async (req, res) => {
 
         const uploadedJsonResponse = await pinata.upload.json({ name, description, price, image: fileUploadUrl });
         const tokenURI = `https://${pinataGateway}/ipfs/${uploadedJsonResponse.IpfsHash}`;
-        const userAddress = wallet.address;
 
-        const nftTx = await nftService.mintNFT({ name, price, description, fileUploadUrl, tokenURI, userAddress }, wallet);
+        const nftTx = await nftService.mintNFT({ name, price, description, tokenURI, userName: user.username });
 
-        // fs.unlinkSync(req.file.path);  // delete the file as it's processed
+        fs.unlinkSync(req.file.path);  // delete the file as it's processed
         return res.status(201).json({ success: true, transaction: nftTx });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -62,9 +74,12 @@ exports.getNftDetail = async (req, res) => {
 exports.getUserOwnedNFTOnMarketplace = async (req, res) => {
     const authToken = req.headers.authorization?.split(' ')[1];
     try {
+        // Fetch user and decrypt the mnemonic
+        const user = await getUserInfo(authToken);
+
         const wallet = await nftService.getUserWallet(authToken);
 
-        const userOwnedNfts = await nftService.getUserOwnedNFTs(wallet);
+        const userOwnedNfts = await nftService.getUserOwnedNFTs(user.username);
         return res.status(200).json({ success: true, userOwnedNfts });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
