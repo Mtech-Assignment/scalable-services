@@ -15,7 +15,7 @@ async function getUserInfo(authToken) {
 
 // Make a payment
 exports.doPayment = async (req, res) => {
-    const { amount } = req.body;
+    const { amount, receiver } = req.body;
     try {
         const token = req.headers.authorization.split(' ')[1]; // Extract JWT from headers
 
@@ -29,7 +29,18 @@ exports.doPayment = async (req, res) => {
 
         const wallet = await tokenService.getUserWallet(token);
 
-        await tokenService.approveToken(amount, wallet);
+        if(receiver) {
+            console.log(`Making a payment for the item bought at ${amount}CSDP to ${receiver}`);
+            console.log();
+            await tokenService.makePayment(amount, wallet, receiver);
+            console.log(`Made a payment for the item bought at ${amount}CSDP to ${receiver} successfully.`);
+        } else {
+            console.log(`Making a payment for the listing item on marketplace at ${amount}CSDP`);
+            console.log();
+            await tokenService.makePayment(amount, wallet);
+            console.log(`Made a payment for listing the item on marketplace at ${amount}CSDP successfully.`);
+        }
+
         return res.status(200).json({ success: true });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });

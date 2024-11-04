@@ -1,9 +1,11 @@
 const { ethers, formatUnits } = require('ethers');
 const { jsonRpcProvider } = require('../config/config');
 const csdpAbi = require('../abi/CSDP.json');
+const paymentSvcAbi = require('../abi/PaymentService.json');
 const { decryptMnemonic } = require('../utils/encrypt');
 
 const csdpTokenContract = new ethers.Contract(process.env.csdpAddress, csdpAbi.abi, jsonRpcProvider);
+const paymentServiceContract = new ethers.Contract(process.env.paymentContractAddress, paymentSvcAbi.abi, jsonRpcProvider);
 require('dotenv').config();
 
 
@@ -19,15 +21,39 @@ exports.getTokenBalance = async (address) => {
     return { etherBalance, tokenBalance }; 
 };
 
-exports.approveToken = async (amount, userWallet) => {
+exports.makePayment = async (amount, userWallet, paymentReceiver=null) => {
     const wallet = new ethers.Wallet(userWallet.privateKey, jsonRpcProvider);
-    const contractWithSigner = csdpTokenContract.connect(wallet);
+    const csdpContractWithSigner = csdpTokenContract.connect(wallet);
+    const paymentSvcContractWithSigner = paymentServiceContract.connect(wallet);
     const convertedPrice = ethers.parseUnits(amount.toString(), 18);
-    const csdpApprovalTxn = await contractWithSigner.approve(
-        process.env.nftMarketplaceAddress,
+    const csdpApprovalTxn = await csdpContractWithSigner.approve(
+        process.env.paymentContractAddress,
         convertedPrice
     );
     await csdpApprovalTxn.wait();
+
+    if(paymentReceiver) {
+        const paymentDetailsPromise = new Promise((res, _) => {
+            paymentServiceContract.once("ItemPayment", (from, to, isPaymentDone) => {
+                console.log(`Item Payment Event captured for payment from ${from} to ${to} with status as ${isPaymentDone}`);
+                res({ from, to, isPaymentDone });
+            })
+        });
+        await (await paymentSvcContractWithSigner.marketplaceItemPayment(paymentReceiver, amount)).wait();
+        const paymentDetails = await paymentDetailsPromise;
+        return paymentDetails;
+    } else {
+        const paymentDetailsPromise = new Promise((res, _) => {
+            paymentServiceContract.once("ListingPayment", (from, isPaymentDone) => {
+                console.log(`Listing Payment Event captured for payment from ${from} to owner with status as ${isPaymentDone}`);
+                res({ from, isPaymentDone });
+            })
+        });
+
+        await (await paymentSvcContractWithSigner.marketplaceListingPayment()).wait();
+        const paymentDetails = await paymentDetailsPromise;
+        return paymentDetails;
+    }
 }
 
 exports.getUserTransactions = async (userAddress) => {
@@ -35,7 +61,7 @@ exports.getUserTransactions = async (userAddress) => {
 
     let txns = await (await fetch(etherscanUrl)).json();
     txns.result = txns.result.map(txn => {
-        return { 
+        return {
             from: txn.from, 
             ...(txn.to && { to: txn.to }) , 
             value: txn.value, 
