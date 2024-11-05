@@ -4,6 +4,7 @@ const mktplaceContractABI = require('../abi/NFTMarketplace.json');
 const { decryptMnemonic } = require('../utils/encrypt');
 const MarketplaceItem = require('../models/MarketplaceItem');
 const Transaction = require('../models/Transaction');
+const { sendEventToNft } = require('./PublishEvent');
 
 require('dotenv').config();
 
@@ -115,7 +116,7 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
         );
         await listedItem.save();
 
-        const listingTransaction = new Transaction({ username: listingUser.username, itemId: listedItem._id, type: 'List', price: 0.025 });
+        const listingTransaction = new Transaction({ username: listingUser.username, item_id: listedItem._id.toString(), type: 'List', price: 0.025 });
         await listingTransaction.save();
 
         return { nft_listed: true, listed_item: listedItem };
@@ -150,22 +151,21 @@ exports.buyItem = async function(marketplaceItemId, token, buyer) {
             { tokenId: buyingItem.tokenId, isOnSale: false, owner: buyer.username, ownerAddress: buyer.address, price: buyingItem.price, sold: true },
             {
                 new: true,
-                upsert: true,
             }
         );
 
-        const buyingTransaction = new Transaction({ username: buyer.username, itemId: buyingItem._id, type: 'Buy', price: buyingItem.price });
+        const buyingTransaction = new Transaction({ username: buyer.username, item_id: marketplaceItemId, type: 'Buy', price: buyingItem.price });
         await buyingTransaction.save();
 
+        // CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
+        await sendEventToNft({ type: 'NFT_OWNER_CHANGE', nft_id: buyingItem.tokenId, new_owner: buyer.username });
+
         const nftInfo = await exports.getNftDetail(buyingItem.tokenId, token);
-
-        // TODO: CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
-
+        
         return { nft_bought: true, nft: nftInfo };
     } else {
         return { nft_bought: false, message: "Item is not on sale" };
     }
-
 };
 
 exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, reseller) {
@@ -190,11 +190,13 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
             }
         );
 
-        const resellTransaction = new Transaction({ username: reseller.username, itemId: itemInfo._id, type: 'Resell', price: 0.025 });
+        const resellTransaction = new Transaction({ username: reseller.username, item_id: itemId, type: 'Resell', price: 0.025 });
         await resellTransaction.save();
-        return { item_listed: true, listed_item: resellItem };
+        
+        // change price of the nft by sending the event to nft service
+        await sendEventToNft({ type: 'NFT_PRICE_CHANGE', nft_id: itemInfo.tokenId, new_price: resellPrice });
 
-        // TODO: change price of the nft by sending the event to nft service
+        return { item_listed: true, listed_item: resellItem };
     } else {
         return { item_listed: false, message: "Item doesn't belong to the user reselling it" };
     }

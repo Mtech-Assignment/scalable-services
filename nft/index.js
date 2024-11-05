@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
+const { consumeEvent } = require('./services/consumeEvent');
 const mongoose = require('mongoose');
 
 require('dotenv').config();
@@ -28,5 +29,6 @@ app.use('/api', routes);
 
 // Start the server
 app.listen(PORT, () => {
+    consumeEvent();
   console.log(`NFT Marketplace API server running on http://localhost:${PORT}`);
 });
