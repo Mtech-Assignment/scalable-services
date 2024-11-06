@@ -1,9 +1,11 @@
 const amqp = require('amqplib');
 const NFT = require('../models/NFT');
+require('dotenv').config();
+
 
 exports.consumeEvent = async function() {
   try {
-    const connection = await amqp.connect('amqp://localhost');
+    const connection = await amqp.connect(process.env.BROKER_URL);
     const channel = await connection.createChannel();
 
     // Declare a direct exchange and a queue with a specific routing key
