@@ -10,8 +10,6 @@ const upload = multer({ dest: 'uploads/' }); // Initialize multer with the stora
 // Mint an NFT
 router.post('/mint', authenticateJWT, upload.single('file'), nftController.mintNFT);
 
-router.get('/:nftId/approve', authenticateJWT, nftController.approveNft)
-
 router.get('/:nftId',  nftController.getNftDetail);
 
 router.delete('/:nftId', authenticateJWT, nftController.burnNFT);

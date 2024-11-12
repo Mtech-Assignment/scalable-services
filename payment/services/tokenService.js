@@ -10,7 +10,7 @@ require('dotenv').config();
 
 
 exports.getTokenBalance = async (address) => {
-    let etherBalance = await provider.getBalance(address);
+    let etherBalance = await jsonRpcProvider.getBalance(address);
     etherBalance = formatUnits(etherBalance, "ether");
     console.log("Balance in ether : "+etherBalance);
     
