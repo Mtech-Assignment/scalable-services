@@ -107,7 +107,12 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
     console.log();
     
     if (nftInfo.owner === listingUser.username) {
-        await makePayment(token, mktplaceListingPrice.toString());
+        const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
+        if (!paymentResult.success) {
+            console.log("Payment Failed due to error: "+ paymentResult.message);
+            console.log();
+            return { nft_listed: false, message: paymentResult.message };
+        }
         console.log("Payment done for listing the item successfully");
         console.log();
 
@@ -142,7 +147,12 @@ exports.buyItem = async function(marketplaceItemId, token, buyer) {
     const buyingItem = await exports.getParticularMarketplaceItem(marketplaceItemId);
 
     if (buyingItem && !buyingItem.sold && buyingItem.isOnSale) {
-        await makePayment(token, buyingItem.price.toString(), buyingItem.ownerAddress);
+        const paymentResult = await makePayment(token, buyingItem.price.toString(), buyingItem.ownerAddress);
+        if (!paymentResult.success) {
+            console.log("Payment Failed due to error: "+ paymentResult.message);
+            console.log();
+            return { nft_bought: false, message: paymentResult.message };
+        }
         console.log("Payment Done for buying NFT with price "+buyingItem.price+" CSDP");
         console.log();
 
@@ -177,7 +187,12 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
     
     if (itemInfo && itemInfo.owner === reseller.username) {
-        await makePayment(token, mktplaceListingPrice.toString());
+        const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
+        if (!paymentResult.success) {
+            console.log("Payment Failed due to error: "+ paymentResult.message);
+            console.log();
+            return { item_listed: false, message: paymentResult.message };
+        }
         console.log("Payment done for listing the item successfully");
         console.log();
 
