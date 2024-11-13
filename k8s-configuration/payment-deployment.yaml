@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+        - name: payment
+          image: shoib/payment:3.5
+          ports:
+            - containerPort: 3012
+          envFrom:
+            - secretRef:
+                name: payment-secret
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3012"

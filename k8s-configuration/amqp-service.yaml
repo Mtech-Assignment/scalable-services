@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: amqp-service
+  labels:
+    app: amqp
+spec:
+  selector:
+    app: amqp
+  ports:
+    - name: amqp
+      port: 5672   # Exposing the AMQP port
+      targetPort: 5672
+    - name: management-ui
+      port: 15672  # Exposing the management UI port (optional)
+      targetPort: 15672
+  # By default, the service type is ClusterIP, so we don't need to specify it.

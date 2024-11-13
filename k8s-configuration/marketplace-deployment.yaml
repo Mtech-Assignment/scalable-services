@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketplace-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marketplace
+  template:
+    metadata:
+      labels:
+        app: marketplace
+    spec:
+      containers:
+        - name: marketplace
+          image: shoib/marketplace:3.5
+          ports:
+            - containerPort: 3013
+          envFrom:
+            - secretRef:
+                name: marketplace-secret
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3013"

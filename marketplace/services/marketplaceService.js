@@ -4,7 +4,7 @@ const mktplaceContractABI = require('../abi/NFTMarketplace.json');
 const { decryptMnemonic } = require('../utils/encrypt');
 const MarketplaceItem = require('../models/MarketplaceItem');
 const Transaction = require('../models/Transaction');
-const { sendEventToNft } = require('./PublishEvent');
+const { sendEventToNft } = require('./publishEvent');
 
 require('dotenv').config();
 
@@ -20,21 +20,19 @@ async function makePayment(token, amount, receiver) {
         reqBody.receiver = receiver;
     }
     const paymentServiceUrl = `${process.env.PAYMENT_SERVICE}/approve`;
-    let paymentResult = await (await fetch(paymentServiceUrl, {
+    return await (await fetch(paymentServiceUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(reqBody),
     })).json();
-    return paymentResult;
 }
 
 async function getMarketplaceListingPrice(wallet) {
     const contractWithSigner = marketplaceContract.connect(wallet);
-    const listingPriceTxn = await contractWithSigner.getListingPrice();
-    return listingPriceTxn;
+    return await contractWithSigner.getListingPrice();
 }
 
 exports.getUserWallet = async (authToken) => {
@@ -105,7 +103,7 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
     const nftInfo = await exports.getNftDetail(tokenId, token);
     console.log(`NFT Info with tokenid ${tokenId} ${JSON.stringify(nftInfo)}`);
     console.log();
-    
+
     if (nftInfo.owner === listingUser.username) {
         const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
         if (!paymentResult.success) {
@@ -171,7 +169,7 @@ exports.buyItem = async function(marketplaceItemId, token, buyer) {
         await sendEventToNft({ type: 'NFT_OWNER_CHANGE', nft_id: buyingItem.tokenId, new_owner: buyer.username });
 
         const nftInfo = await exports.getNftDetail(buyingItem.tokenId, token);
-        
+
         return { nft_bought: true, nft: nftInfo };
     } else {
         return { nft_bought: false, message: "Item is not on sale" };
@@ -185,7 +183,7 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
     console.log();
 
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
-    
+
     if (itemInfo && itemInfo.owner === reseller.username) {
         const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
         if (!paymentResult.success) {
@@ -207,7 +205,7 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
 
         const resellTransaction = new Transaction({ username: reseller.username, item_id: itemId, type: 'Resell', price: 0.025 });
         await resellTransaction.save();
-        
+
         // change price of the nft by sending the event to nft service
         await sendEventToNft({ type: 'NFT_PRICE_CHANGE', nft_id: itemInfo.tokenId, new_price: resellPrice });
 
@@ -218,13 +216,12 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
 };
 
 exports.getUserTransactions = async function(username) {
-    const userTxns = Transaction.find({ username });
-    return userTxns;
+    return Transaction.find({username});
 };
 
 exports.removeItemFromMarketplace = async function(itemId, owner) {
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
-    
+
     if (itemInfo && itemInfo.owner === owner.username) {
         await MarketplaceItem.deleteOne({ _id: itemInfo._id });
     } else {

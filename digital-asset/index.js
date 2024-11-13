@@ -30,5 +30,5 @@ app.use('/api', routes);
 // Start the server
 app.listen(PORT, () => {
     consumeEvent();
-  console.log(`NFT Marketplace API server running on http://localhost:${PORT}`);
+  console.log(`NFT Marketplace API server running on http://digital-asset:${PORT}`);
 });
