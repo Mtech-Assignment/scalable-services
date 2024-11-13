@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3010;
 
 // Enable CORS for all routes
 app.use(cors());
@@ -28,5 +28,5 @@ app.use('/api', routes);
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Authentication service is running on http://localhost:${PORT}`);
+  console.log(`Authentication service is running on http://authentication-service:${PORT}`);
 });

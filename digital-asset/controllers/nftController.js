@@ -22,7 +22,7 @@ exports.mintNFT = async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
-    
+
     const pinata = new PinataSDK({
         pinataJwt: process.env.PINATA_JWT
     });
@@ -34,7 +34,7 @@ exports.mintNFT = async (req, res) => {
         const user = await getUserInfo(authToken);
 
         const blob = new Blob([fs.readFileSync(req.file.path)]);
-        
+
         // upload a file to ipfs
         const uploadedFileResponse = await pinata.upload.file(blob);
 
@@ -46,7 +46,7 @@ exports.mintNFT = async (req, res) => {
         if (!name || !price || !description || !fileUploadUrl) {
             console.log("Some field are missing");
             console.log();
-            return res.status(404).json({ success: false, message: `Some field of NFT not found` });;
+            return res.status(404).json({ success: false, message: `Some field of NFT not found` });
         }
 
         const uploadedJsonResponse = await pinata.upload.json({ name, description, price, image: fileUploadUrl });
@@ -90,17 +90,15 @@ exports.burnNFT = async (req, res) => {
     const { nftId } = req.params;
     const authToken = req.headers.authorization?.split(' ')[1];
     try {
-        const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
-        let user = await (await fetch(authServiceUrl, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-            },
-        })).json();
+        // Fetch user and decrypt the mnemonic
+        const user = await getUserInfo(authToken);
 
-        const userWallet = await nftService.getUserWallet(authToken);
-        await nftService.burnNFT(userWallet, nftId);
+        const nftInfo = (await nftService.getNftDetail(nftId)).nft_info;
+        if (nftInfo.owner !== user.username) {
+            return res.status(401).json({ success: false, message: "You are not authorized to burn this asset" });
+        }
+
+        await nftService.burnNFT(nftId);
         console.log(`Burned NFT with tokenId ${nftId} of user ${JSON.stringify(user)}`);
         console.log();
 
@@ -109,31 +107,5 @@ exports.burnNFT = async (req, res) => {
         } });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
-    } 
-}
-
-exports.approveNft = async function (req, res) {
-    const { nftId } = req.params;
-    const authToken = req.headers.authorization?.split(' ')[1];
-    try {
-        const authServiceUrl = `${process.env.AUTH_SERVICE_URL}/user`;
-        let user = await (await fetch(authServiceUrl, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-            },
-        })).json();
-
-        const userWallet = await nftService.getUserWallet(authToken);
-        await nftService.approveNftToMarketplace(userWallet, nftId);
-        console.log(`Approved NFT with tokenId ${nftId} of user ${JSON.stringify(user)}`);
-        console.log();
-
-        return res.status(201).json({ success: true, transactions: {
-            nft_approved: nftId
-        } });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
-    } 
+    }
 }

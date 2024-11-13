@@ -73,6 +73,10 @@ exports.listItemOnMarketplace = async (req, res) => {
 
         const userWallet = await marketplaceService.getUserWallet(authToken);
         const listNFTTxRes = await marketplaceService.listNFT(nft_id, userWallet, authToken, user);
+        if (!listNFTTxRes.nft_listed) {
+            return res.status(402).json({ success: false, message: listNFTTxRes.message });
+        }
+
         return res.status(201).json({ success: true, transaction: listNFTTxRes });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -103,12 +107,12 @@ exports.buyItem = async (req, res) => {
         console.log("Buying NFT from user: "+ JSON.stringify(user));
         console.log();
 
-        const tx = await marketplaceService.buyItem(itemId, authToken, user);
-
-        if (!tx.nft_bought) {
-            return res.status(404).json({ success: false, message: tx.message });
+        const buyItemTx = await marketplaceService.buyItem(itemId, authToken, user);
+        if (!buyItemTx.nft_bought) {
+            return res.status(402).json({ success: false, message: buyItemTx.message });
         }
-        return res.status(200).json({ success: true, transaction: tx });
+        
+        return res.status(200).json({ success: true, transaction: buyItemTx.nft });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }

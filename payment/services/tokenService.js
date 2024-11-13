@@ -10,15 +10,15 @@ require('dotenv').config();
 
 
 exports.getTokenBalance = async (address) => {
-    let etherBalance = await provider.getBalance(address);
+    let etherBalance = await jsonRpcProvider.getBalance(address);
     etherBalance = formatUnits(etherBalance, "ether");
     console.log("Balance in ether : "+etherBalance);
-    
+
     let tokenBalance = await csdpTokenContract.balanceOf(address);
     tokenBalance = formatUnits(tokenBalance, 18);
     console.log("Balance in CSDP token : "+tokenBalance);
-    
-    return { etherBalance, tokenBalance }; 
+
+    return { etherBalance, tokenBalance };
 };
 
 exports.makePayment = async (amount, userWallet, paymentReceiver=null) => {
@@ -40,8 +40,7 @@ exports.makePayment = async (amount, userWallet, paymentReceiver=null) => {
             })
         });
         await (await paymentSvcContractWithSigner.marketplaceItemPayment(paymentReceiver, amount)).wait();
-        const paymentDetails = await paymentDetailsPromise;
-        return paymentDetails;
+        return await paymentDetailsPromise;
     } else {
         const paymentDetailsPromise = new Promise((res, _) => {
             paymentServiceContract.once("ListingPayment", (from, isPaymentDone) => {
@@ -62,10 +61,10 @@ exports.getUserTransactions = async (userAddress) => {
     let txns = await (await fetch(etherscanUrl)).json();
     txns.result = txns.result.map(txn => {
         return {
-            from: txn.from, 
-            ...(txn.to && { to: txn.to }) , 
-            value: txn.value, 
-            ...(txn.functionName && { functionName: txn.functionName }) 
+            from: txn.from,
+            ...(txn.to && { to: txn.to }) ,
+            value: txn.value,
+            ...(txn.functionName && { functionName: txn.functionName })
         };
     });
 

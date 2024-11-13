@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: digital-assets-service
+spec:
+  selector:
+    app: digital-assets
+  ports:
+    - protocol: TCP
+      port: 3011
+      targetPort: 3011
+  type: NodePort
