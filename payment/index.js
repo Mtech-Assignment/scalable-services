@@ -18,5 +18,5 @@ app.use('/api', routes);
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Payment Service running on http://localhost:${PORT}`);
+  console.log(`Payment Service running on http://payment:${PORT}`);
 });

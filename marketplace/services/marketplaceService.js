@@ -24,8 +24,8 @@ async function makePayment(token, amount, receiver) {
     let paymentResult = fetch(paymentServiceUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(reqBody),
     });
@@ -34,8 +34,7 @@ async function makePayment(token, amount, receiver) {
 
 async function getMarketplaceListingPrice(wallet) {
     const contractWithSigner = marketplaceContract.connect(wallet);
-    const listingPriceTxn = await contractWithSigner.getListingPrice();
-    return listingPriceTxn;
+    return await contractWithSigner.getListingPrice();
 }
 
 exports.getUserWallet = async (authToken) => {
@@ -106,7 +105,7 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
     const nftInfo = await exports.getNftDetail(tokenId, token);
     console.log(`NFT Info with tokenid ${tokenId} ${JSON.stringify(nftInfo)}`);
     console.log();
-    
+
     if (nftInfo.owner === listingUser.username) {
         const asyncListJob = new AsyncJobStatus({ user: listingUser.username, status: 'PENDING', message: 'Item listing on marketplace transaction started successfully...' });
         await asyncListJob.save();
@@ -230,7 +229,7 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
     console.log();
 
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
-    
+
     if (itemInfo && itemInfo.owner === reseller.username) {
         const asyncListJob = new AsyncJobStatus({ user: reseller.username, status: 'PENDING', message: 'Item reselling transaction processing...' });
         await asyncListJob.save();
@@ -286,13 +285,12 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
 };
 
 exports.getUserTransactions = async function(username) {
-    const userTxns = Transaction.find({ username });
-    return userTxns;
+    return Transaction.find({username});
 };
 
 exports.removeItemFromMarketplace = async function(itemId, owner) {
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
-    
+
     if (itemInfo && itemInfo.owner === owner.username) {
         await MarketplaceItem.deleteOne({ _id: itemInfo._id });
     } else {

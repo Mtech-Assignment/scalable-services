@@ -22,7 +22,7 @@ exports.mintNFT = async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
-    
+
     const pinata = new PinataSDK({
         pinataJwt: process.env.PINATA_JWT
     });
@@ -34,7 +34,7 @@ exports.mintNFT = async (req, res) => {
         const user = await getUserInfo(authToken);
 
         const blob = new Blob([fs.readFileSync(req.file.path)]);
-        
+
         // upload a file to ipfs
         const uploadedFileResponse = await pinata.upload.file(blob);
 
@@ -46,7 +46,7 @@ exports.mintNFT = async (req, res) => {
         if (!name || !price || !description || !fileUploadUrl) {
             console.log("Some field are missing");
             console.log();
-            return res.status(404).json({ success: false, message: `Some field of NFT not found` });;
+            return res.status(404).json({ success: false, message: `Some field of NFT not found` });
         }
 
         const uploadedJsonResponse = await pinata.upload.json({ name, description, price, image: fileUploadUrl });
@@ -107,5 +107,5 @@ exports.burnNFT = async (req, res) => {
         } });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
-    } 
+    }
 }
