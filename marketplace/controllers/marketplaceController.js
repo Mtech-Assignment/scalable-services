@@ -1,3 +1,4 @@
+const AsyncJobStatus = require('../models/AsyncJobStatus');
 const marketplaceService = require('../services/marketplaceService');
 require('dotenv').config();
 
@@ -58,6 +59,30 @@ exports.getUserListedItemOnMarketplace = async (req, res) => {
     }
 }
 
+exports.jobStatus = async (req, res) => {
+    const { jobId } = req.params;
+    const authToken = req.headers.authorization?.split(' ')[1];
+
+    try {
+        // Fetch user and decrypt the mnemonic
+        const user = await getUserInfo(authToken);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        console.log(`Getting job status for job id: ${jobId}`);
+        console.log();
+
+        const jobStatus = await AsyncJobStatus.findById(jobId);
+        if (jobStatus && jobStatus.user !== user.username) {
+            return res.status(404).json({ success: false, message: "Invalid Job Id" });
+        }
+
+        return res.status(201).json({ success: true, result: { job_id: jobStatus._id, status: jobStatus.status, message: jobStatus.message }});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 exports.listItemOnMarketplace = async (req, res) => {
     const { nft_id } = req.body;
     const authToken = req.headers.authorization?.split(' ')[1];
@@ -73,11 +98,11 @@ exports.listItemOnMarketplace = async (req, res) => {
 
         const userWallet = await marketplaceService.getUserWallet(authToken);
         const listNFTTxRes = await marketplaceService.listNFT(nft_id, userWallet, authToken, user);
-        if (!listNFTTxRes.nft_listed) {
-            return res.status(402).json({ success: false, message: listNFTTxRes.message });
+        if (!listNFTTxRes.success) {
+            return res.status(400).json({ success: false, message: listNFTTxRes.message });
         }
 
-        return res.status(201).json({ success: true, transaction: listNFTTxRes });
+        return res.status(201).json({ success: true, result: listNFTTxRes.result });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
@@ -108,11 +133,11 @@ exports.buyItem = async (req, res) => {
         console.log();
 
         const buyItemTx = await marketplaceService.buyItem(itemId, authToken, user);
-        if (!buyItemTx.nft_bought) {
-            return res.status(402).json({ success: false, message: buyItemTx.message });
+        if (!buyItemTx.success) {
+            return res.status(400).json({ success: false, message: buyItemTx.message });
         }
         
-        return res.status(200).json({ success: true, transaction: buyItemTx.nft });
+        return res.status(200).json({ success: true, result: buyItemTx.result });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
@@ -135,10 +160,10 @@ exports.resellItem = async (req, res) => {
 
         const sellerWallet = await marketplaceService.getUserWallet(authToken);
         const tx = await marketplaceService.resellNFT(itemId, resell_price, sellerWallet, authToken, user);
-        if (tx && !tx.item_listed) {
-            return res.status(402).json({ success: false, message: tx.message });
+        if (!tx.success) {
+            return res.status(400).json({ success: false, message: tx.message });
         }
-        return res.status(201).json({ success: true, transaction: tx });
+        return res.status(201).json({ success: true, result: tx.result });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }

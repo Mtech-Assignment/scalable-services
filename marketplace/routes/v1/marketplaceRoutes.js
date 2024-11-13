@@ -11,6 +11,8 @@ router.get('/listing', marketplaceController.getListedItemOnMarketplace);
 
 router.get('/:itemId',  marketplaceController.getItemDetail);
 
+router.get('/jobs/:jobId',  marketplaceController.jobStatus);
+
 // Buy an NFT (Just changing the ownership)
 router.put('/:itemId/buy', authenticateJWT, marketplaceController.buyItem);
 

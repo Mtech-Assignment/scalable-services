@@ -4,6 +4,7 @@ const mktplaceContractABI = require('../abi/NFTMarketplace.json');
 const { decryptMnemonic } = require('../utils/encrypt');
 const MarketplaceItem = require('../models/MarketplaceItem');
 const Transaction = require('../models/Transaction');
+const AsyncJobStatus = require('../models/AsyncJobStatus');
 const { sendEventToNft } = require('./PublishEvent');
 
 require('dotenv').config();
@@ -20,14 +21,14 @@ async function makePayment(token, amount, receiver) {
         reqBody.receiver = receiver;
     }
     const paymentServiceUrl = `${process.env.PAYMENT_SERVICE}/approve`;
-    let paymentResult = await (await fetch(paymentServiceUrl, {
+    let paymentResult = fetch(paymentServiceUrl, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(reqBody),
-    })).json();
+    });
     return paymentResult;
 }
 
@@ -107,26 +108,49 @@ exports.listNFT = async function(tokenId, listerWallet, token, listingUser) {
     console.log();
     
     if (nftInfo.owner === listingUser.username) {
-        const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
-        if (!paymentResult.success) {
-            console.log("Payment Failed due to error: "+ paymentResult.message);
+        const asyncListJob = new AsyncJobStatus({ user: listingUser.username, status: 'PENDING', message: 'Item listing on marketplace transaction started successfully...' });
+        await asyncListJob.save();
+        
+        // const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
+        makePayment(token, mktplaceListingPrice.toString())
+        .then((payRes) => payRes.json())
+        .then(async (paymentResult) => {
+            if (!paymentResult.success) {
+                console.log("Payment Failed due to error: "+ paymentResult.message);
+                console.log();
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'FAILED', message: paymentResult.message },
+                );
+            } else {
+                console.log("Payment done for listing the item successfully");
+                console.log();
+                const listedItem = new MarketplaceItem(
+                    { tokenId, isOnSale: true, owner: nftInfo.owner, ownerAddress: listingUser.address, price: nftInfo.price, sold: false }
+                );
+                await listedItem.save();
+        
+                const listingTransaction = new Transaction({ username: listingUser.username, item_id: listedItem._id.toString(), type: 'List', price: 0.025 });
+                await listingTransaction.save();
+
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'DONE', message: 'Payment successfull and Item listed successfully on marketplace.' },
+                );
+            }
+        })
+        .catch(async (err) => {
+            console.log("Payment Failed due to error: "+ err);
             console.log();
-            return { nft_listed: false, message: paymentResult.message };
-        }
-        console.log("Payment done for listing the item successfully");
-        console.log();
+            await AsyncJobStatus.findByIdAndUpdate(
+                asyncListJob._id,
+                { status: 'FAILED', message: err }
+            );
+        });
 
-        const listedItem = new MarketplaceItem(
-            { tokenId, isOnSale: true, owner: nftInfo.owner, ownerAddress: listingUser.address, price: nftInfo.price, sold: false }
-        );
-        await listedItem.save();
-
-        const listingTransaction = new Transaction({ username: listingUser.username, item_id: listedItem._id.toString(), type: 'List', price: 0.025 });
-        await listingTransaction.save();
-
-        return { nft_listed: true, listed_item: listedItem };
+        return { success: true, result: { id: asyncListJob._id, status: 'PENDING', message: asyncListJob.message } };
     } else {
-        return { nft_listed: false, message: "NFT doesn't belong to the user listing it" };
+        return { success: false, message: "NFT doesn't belong to the user listing it" };
     }
 };
 
@@ -147,34 +171,55 @@ exports.buyItem = async function(marketplaceItemId, token, buyer) {
     const buyingItem = await exports.getParticularMarketplaceItem(marketplaceItemId);
 
     if (buyingItem && !buyingItem.sold && buyingItem.isOnSale) {
-        const paymentResult = await makePayment(token, buyingItem.price.toString(), buyingItem.ownerAddress);
-        if (!paymentResult.success) {
-            console.log("Payment Failed due to error: "+ paymentResult.message);
-            console.log();
-            return { nft_bought: false, message: paymentResult.message };
-        }
-        console.log("Payment Done for buying NFT with price "+buyingItem.price+" CSDP");
-        console.log();
+        const asyncListJob = new AsyncJobStatus({ user: buyer.username, status: 'PENDING', message: 'Buying Item Transaction Processing...' });
+        await asyncListJob.save();
 
-        await MarketplaceItem.findOneAndUpdate(
-            { tokenId: buyingItem.tokenId },
-            { tokenId: buyingItem.tokenId, isOnSale: false, owner: buyer.username, ownerAddress: buyer.address, price: buyingItem.price, sold: true },
-            {
-                new: true,
+        makePayment(token, buyingItem.price.toString(), buyingItem.ownerAddress)
+        .then((payRes) => payRes.json())
+        .then(async (paymentResult) => {
+            if (!paymentResult.success) {
+                console.log("Payment Failed due to error: "+ paymentResult.message);
+                console.log();
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'FAILED', message: paymentResult.message },
+                );
+            } else {
+                console.log("Payment Done for buying NFT with price "+buyingItem.price+" CSDP");
+                console.log();
+
+                await MarketplaceItem.findOneAndUpdate(
+                    { tokenId: buyingItem.tokenId },
+                    { tokenId: buyingItem.tokenId, isOnSale: false, owner: buyer.username, ownerAddress: buyer.address, price: buyingItem.price, sold: true },
+                    {
+                        new: true,
+                    }
+                );
+
+                const buyingTransaction = new Transaction({ username: buyer.username, item_id: marketplaceItemId, type: 'Buy', price: buyingItem.price });
+                await buyingTransaction.save();
+
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'DONE', message: 'Item Bought successfully from marketplace.' }
+                );
+
+                // CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
+                await sendEventToNft({ type: 'NFT_OWNER_CHANGE', nft_id: buyingItem.tokenId, new_owner: buyer.username });
             }
-        );
-
-        const buyingTransaction = new Transaction({ username: buyer.username, item_id: marketplaceItemId, type: 'Buy', price: buyingItem.price });
-        await buyingTransaction.save();
-
-        // CHANGE OWNERSHIP OF THE NFT BY SENDING EVENT TO NFT SERVICE
-        await sendEventToNft({ type: 'NFT_OWNER_CHANGE', nft_id: buyingItem.tokenId, new_owner: buyer.username });
-
-        const nftInfo = await exports.getNftDetail(buyingItem.tokenId, token);
+        })
+        .catch(async (err) => {
+            console.log("Payment Failed due to error: "+ err);
+            console.log();
+            await AsyncJobStatus.findByIdAndUpdate(
+                asyncListJob._id,
+                { status: 'FAILED', message: err },
+            );
+        });
         
-        return { nft_bought: true, nft: nftInfo };
+        return { success: true, result: { id: asyncListJob._id, status: 'PENDING', message: asyncListJob.message }};
     } else {
-        return { nft_bought: false, message: "Item is not on sale" };
+        return { success: false, message: "Item is not on sale" };
     }
 };
 
@@ -187,33 +232,56 @@ exports.resellNFT = async function(itemId, resellPrice, resellerWallet, token, r
     const itemInfo = await exports.getParticularMarketplaceItem(itemId);
     
     if (itemInfo && itemInfo.owner === reseller.username) {
-        const paymentResult = await makePayment(token, mktplaceListingPrice.toString());
-        if (!paymentResult.success) {
-            console.log("Payment Failed due to error: "+ paymentResult.message);
-            console.log();
-            return { item_listed: false, message: paymentResult.message };
-        }
-        console.log("Payment done for listing the item successfully");
-        console.log();
+        const asyncListJob = new AsyncJobStatus({ user: reseller.username, status: 'PENDING', message: 'Item reselling transaction processing...' });
+        await asyncListJob.save();
 
-        const resellItem = await MarketplaceItem.findOneAndUpdate(
-            { tokenId: itemInfo.tokenId },
-            { tokenId: itemInfo.tokenId, isOnSale: true, owner: itemInfo.owner, ownerAddress: reseller.address, price: resellPrice, sold: false },
-            {
-                new: true,
-                upsert: true,
+        makePayment(token, mktplaceListingPrice.toString())
+        .then((payRes) => payRes.json())
+        .then(async (paymentResult) => {
+            if (!paymentResult.success) {
+                console.log("Payment Failed due to error: "+ paymentResult.message);
+                console.log();
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'FAILED', message: paymentResult.message },
+                );
+            } else {
+                console.log("Payment done for listing the item successfully");
+                console.log();
+
+                await MarketplaceItem.findOneAndUpdate(
+                    { tokenId: itemInfo.tokenId },
+                    { tokenId: itemInfo.tokenId, isOnSale: true, owner: itemInfo.owner, ownerAddress: reseller.address, price: resellPrice, sold: false },
+                    {
+                        new: true,
+                        upsert: true,
+                    }
+                );
+
+                const resellTransaction = new Transaction({ username: reseller.username, item_id: itemId, type: 'Resell', price: 0.025 });
+                await resellTransaction.save();
+
+                await AsyncJobStatus.findByIdAndUpdate(
+                    asyncListJob._id,
+                    { status: 'DONE', message: 'Payment Successfull and NFT relisted successfully.' },
+                );
+                
+                // change price of the nft by sending the event to nft service
+                await sendEventToNft({ type: 'NFT_PRICE_CHANGE', nft_id: itemInfo.tokenId, new_price: resellPrice });
             }
-        );
+        })
+        .catch(async (err) => {
+            console.log("Payment Failed due to error: "+ err);
+            console.log();
+            await AsyncJobStatus.findByIdAndUpdate(
+                asyncListJob._id,
+                { status: 'FAILED', message: err },
+            );
+        });
 
-        const resellTransaction = new Transaction({ username: reseller.username, item_id: itemId, type: 'Resell', price: 0.025 });
-        await resellTransaction.save();
-        
-        // change price of the nft by sending the event to nft service
-        await sendEventToNft({ type: 'NFT_PRICE_CHANGE', nft_id: itemInfo.tokenId, new_price: resellPrice });
-
-        return { item_listed: true, listed_item: resellItem };
+        return { success: true, result: { id: asyncListJob._id, status: 'PENDING', message: asyncListJob.message } };
     } else {
-        return { item_listed: false, message: "Item doesn't belong to the user reselling it" };
+        return { success: false, message: "Item doesn't belong to the user reselling it" };
     }
 };
 
