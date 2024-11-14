@@ -5,7 +5,7 @@ const { decryptMnemonic } = require('../utils/encrypt');
 const MarketplaceItem = require('../models/MarketplaceItem');
 const Transaction = require('../models/Transaction');
 const AsyncJobStatus = require('../models/AsyncJobStatus');
-const { sendEventToNft } = require('./PublishEvent');
+const { sendEventToNft } = require('./publishEvent');
 
 require('dotenv').config();
 
