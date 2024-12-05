@@ -10,7 +10,12 @@
 - Chandan Kumar Shaw  
 - Shoaib Ansari  
 - Prashant  
-- Deepak Kumar Sah  
+- Deepak Kumar Sah
+ 
+---
+
+## **Repository**  
+[GitHub Repository Link](https://github.com/Mtech-Assignment/scalable-services) 
 
 ---
 
@@ -165,7 +170,3 @@ By adopting a microservices architecture, these issues are mitigated, enabling f
 ## **Postman Collection**  
 The full API endpoint details can be accessed in the [Postman Collection Repository](https://github.com/Mtech-Assignment/scalable-services/tree/main/services-api-postman-collection).  
 
----
-
-## **Repository**  
-[GitHub Repository Link](https://github.com/Mtech-Assignment/scalable-services)  
