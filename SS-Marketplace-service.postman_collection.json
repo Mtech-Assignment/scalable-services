@@ -1,0 +1,305 @@
+{
+	"info": {
+		"_postman_id": "f16fd8ac-cd4f-415c-9c2a-551530a3d633",
+		"name": "SS-Marketplace-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35105121",
+		"_collection_link": "https://ben100-0358.postman.co/workspace/Ben10-Workspace~ff1f1939-3f72-4f1e-8df5-6f10d4949e43/collection/35105121-f16fd8ac-cd4f-415c-9c2a-551530a3d633?action=share&source=collection_link&creator=35105121"
+	},
+	"item": [
+		{
+			"name": "Get Marketplace Listings",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "List an item",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nft_id\": \"672941f9a1c38bf6e58409a1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3013/api/v1/marketplace/list",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"marketplace",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buy a marketplace item",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3013/api/v1/marketplace/672a56dd64081492f3ca4a23/buy",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"marketplace",
+						"672a56dd64081492f3ca4a23",
+						"buy"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user owned items",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3013/api/v1/user/672902452368c9d15ff11db2/item",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"672902452368c9d15ff11db2",
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Item detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjkwMzZkMjM2OGM5ZDE1ZmYxMWRjZCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMSIsImlhdCI6MTczMDc0MTExMiwiZXhwIjoxODE4NzM5NTEyfQ.zFAQM4nTsEN7BP6pCX13mns3lXzeU_KnZWNudNPpeuQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3013/api/v1/marketplace/67290265c2f6e350a16d46a2",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"marketplace",
+						"67290265c2f6e350a16d46a2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user listed items",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjkwMzZkMjM2OGM5ZDE1ZmYxMWRjZCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMSIsImlhdCI6MTczMDc0MTExMiwiZXhwIjoxODE4NzM5NTEyfQ.zFAQM4nTsEN7BP6pCX13mns3lXzeU_KnZWNudNPpeuQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3013/api/v1/user/6729036d2368c9d15ff11dcd/item?listed=true",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"6729036d2368c9d15ff11dcd",
+						"item"
+					],
+					"query": [
+						{
+							"key": "listed",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resell item",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"resell_price\": 11\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3013/api/v1/marketplace/672a54e564081492f3ca4a15/resell",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"marketplace",
+						"672a54e564081492f3ca4a15",
+						"resell"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unlist Marketplace Item",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjkwMzZkMjM2OGM5ZDE1ZmYxMWRjZCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMSIsImlhdCI6MTczMDc0MTExMiwiZXhwIjoxODE4NzM5NTEyfQ.zFAQM4nTsEN7BP6pCX13mns3lXzeU_KnZWNudNPpeuQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:3013/api/v1/marketplace/672902891fbaa73d8861c75f",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"marketplace",
+						"672902891fbaa73d8861c75f"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user transactions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3013/api/v1/user/6729036d2368c9d15ff11dcd/transactions",
+					"host": [
+						"localhost"
+					],
+					"port": "3013",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"6729036d2368c9d15ff11dcd",
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

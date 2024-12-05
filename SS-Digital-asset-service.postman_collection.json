@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "0341f6e5-7345-4660-9dd4-d7d1193c7e95",
+		"name": "SS-Digital-asset-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35105121",
+		"_collection_link": "https://ben100-0358.postman.co/workspace/Ben10-Workspace~ff1f1939-3f72-4f1e-8df5-6f10d4949e43/collection/35105121-0341f6e5-7345-4660-9dd4-d7d1193c7e95?action=share&source=collection_link&creator=35105121"
+	},
+	"item": [
+		{
+			"name": "Mint NFT",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjkwMjQ1MjM2OGM5ZDE1ZmYxMWRiMiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNzQwODEyLCJleHAiOjE4MTg3MzkyMTJ9.cblG4sWl4cRl6wwm7x1ai-M0b4JToNbuJ25KlvmQh3o",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Holi Boy",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "5",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "Boy is fond of playing holi",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/I528640/Pictures/Screenshots/Screenshot 2024-10-18 145156.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3011/api/v1/nft/mint",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"nft",
+						"mint"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get specific NFT details",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3011/api/v1/nft/672a66938f7fcf695b55eb2b",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"nft",
+						"672a66938f7fcf695b55eb2b"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all user owned NFT",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjhmZmNjMjM2OGM5ZDE1ZmYxMWQ4NCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNzQwMTc2LCJleHAiOjE4MTg3Mzg1NzZ9.OenjeqOz7J3KhtdJu6QCVhYn_YfquctzAKtAxLHBDoY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3011/api/v1/user/nft",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"nft"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a specific NFT",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjUxZDNkMGExYTFlNGY2MjBkNGFmNiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNTM0OTYyLCJleHAiOjE4MTg1MzMzNjJ9.ou-u69PeknrPeX11GrGHag3Jk2ngP2QL3ExgnR3Kt3c",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3011/api/v1/nft/2",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"nft",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Approve NFT",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjUxZDNkMGExYTFlNGY2MjBkNGFmNiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNjQwNjU4LCJleHAiOjE4MTg2MzkwNTh9.oGxokeRgKfDSV3aKq5HEiKLGs1b8Zr5SRXyValjQQCA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3011/api/v1/nft/8/approve",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"nft",
+						"8",
+						"approve"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

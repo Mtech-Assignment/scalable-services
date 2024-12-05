@@ -1,0 +1,90 @@
+{
+	"info": {
+		"_postman_id": "9bcbfa57-8b7e-4879-b976-ac98adbccc8e",
+		"name": "SS-Payment-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35105121",
+		"_collection_link": "https://ben100-0358.postman.co/workspace/Ben10-Workspace~ff1f1939-3f72-4f1e-8df5-6f10d4949e43/collection/35105121-9bcbfa57-8b7e-4879-b976-ac98adbccc8e?action=share&source=collection_link&creator=35105121"
+	},
+	"item": [
+		{
+			"name": "Get user balance",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjUxZDNkMGExYTFlNGY2MjBkNGFmNiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNDg1NTgxLCJleHAiOjE4MTg0ODM5ODF9.zmwGrVUHbe565FN_ZRNz0HuF8Riuenk8hCaQoCpcgq0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3011/api/v1/user/nft",
+					"host": [
+						"localhost"
+					],
+					"port": "3011",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"nft"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Make a payment",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjUxZDNkMGExYTFlNGY2MjBkNGFmNiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNDg1NTgxLCJleHAiOjE4MTg0ODM5ODF9.zmwGrVUHbe565FN_ZRNz0HuF8Riuenk8hCaQoCpcgq0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"amount\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3012/api/v1/token/approve",
+					"host": [
+						"localhost"
+					],
+					"port": "3012",
+					"path": [
+						"api",
+						"v1",
+						"token",
+						"approve"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user transactions",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

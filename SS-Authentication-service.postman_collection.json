@@ -1,0 +1,246 @@
+{
+	"info": {
+		"_postman_id": "5d018fcb-925e-42e5-bfab-1e091daf30d4",
+		"name": "SS-authentication-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35105121",
+		"_collection_link": "https://ben100-0358.postman.co/workspace/Ben10-Workspace~ff1f1939-3f72-4f1e-8df5-6f10d4949e43/collection/35105121-5d018fcb-925e-42e5-bfab-1e091daf30d4?action=share&source=collection_link&creator=35105121"
+	},
+	"item": [
+		{
+			"name": "Register new user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"chandankumar1\",\r\n    \"email\": \"chandankumar1@gmail.com\",\r\n    \"password\": \"chandankumar\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3010/api/v1/auth/register",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"chandankumar2\",\r\n    \"password\": \"chandankumar\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3010/api/v1/auth/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MmE2NWVlNTk3MTlkMDNkMDZlZDgyMiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMiIsImlhdCI6MTczMDgzMTg5OCwiZXhwIjoxODE4ODMwMjk4fQ.eR2ogbheuVcpJ8fSkX4Lue6U9alH-hf1AjYP8gz5i84\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3010/api/v1/auth/verify",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Wallet seed phrase",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjM2OTgxMjlmOGNmOTI1MzU1MTQ5OCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMSIsImlhdCI6MTczMDM3NDAzMywiZXhwIjoxODE4MzcyNDMzfQ.GuQxmC-Sxb0o_qBV57wH6DzRCW2Hmj-ykMlm3cXkr1A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3010/api/v1/user/wallet",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"wallet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user wallet details",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjM2OTgxMjlmOGNmOTI1MzU1MTQ5OCIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyMSIsImlhdCI6MTczMDM3NDAzMywiZXhwIjoxODE4MzcyNDMzfQ.GuQxmC-Sxb0o_qBV57wH6DzRCW2Hmj-ykMlm3cXkr1A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3010/api/v1/user/6723698129f8cf9253551498/wallet",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"6723698129f8cf9253551498",
+						"wallet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet using mnemonic",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MjUxZDNkMGExYTFlNGY2MjBkNGFmNiIsInVzZXJuYW1lIjoiY2hhbmRhbmt1bWFyIiwiaWF0IjoxNzMwNjQwNjU4LCJleHAiOjE4MTg2MzkwNTh9.oGxokeRgKfDSV3aKq5HEiKLGs1b8Zr5SRXyValjQQCA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mnemonic\": \"enroll forest account junk agent start hybrid envelope bounce six patrol claw\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3010/api/v1/user/wallet",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"wallet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3010/api/v1/user",
+					"host": [
+						"localhost"
+					],
+					"port": "3010",
+					"path": [
+						"api",
+						"v1",
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
