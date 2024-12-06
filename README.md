@@ -116,6 +116,8 @@ By adopting a microservices architecture, these issues are mitigated, enabling f
 ## **Sequence Diagram of different service interactions**
 ![Screenshot 2024-12-06 112423](https://github.com/user-attachments/assets/60ed070a-b43a-41e4-a6f0-f440eb986af1)
 
+Diagram Link in [Draw.io](https://tinyurl.com/amj2ubpd)
+
 
 ---
 
