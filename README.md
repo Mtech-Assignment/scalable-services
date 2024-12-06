@@ -110,6 +110,14 @@ By adopting a microservices architecture, these issues are mitigated, enabling f
 - Traffic-heavy operations (e.g., NFT minting) benefit from dedicated scaling.
 
 ---
+## **Flow Diagram of different service interactions**
+![Screenshot 2024-12-05 224703](https://github.com/user-attachments/assets/ec51ad9a-9c6b-4f84-ba64-f5ea1eb763eb)
+
+## **Sequence Diagram of different service interactions**
+![Screenshot 2024-12-06 112423](https://github.com/user-attachments/assets/60ed070a-b43a-41e4-a6f0-f440eb986af1)
+
+
+---
 
 ## **Service Features**  
 
