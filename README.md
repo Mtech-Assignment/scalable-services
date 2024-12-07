@@ -8,7 +8,7 @@
 **Batch**: 2YB  
 **Team Members**:  
 - Chandan Kumar Shaw  
-- Shoaib Ansari  
+- Shoib Ansari  
 - Prashant  
 - Deepak Kumar Sah
  
