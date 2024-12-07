@@ -16,6 +16,7 @@
 
 ## **Repository**  
 [GitHub Repository Link](https://github.com/Mtech-Assignment/scalable-services) 
+[Deployment Report](https://github.com/Mtech-Assignment/scalable-services/blob/main/ScalalbeAssignment2-Microservice-deployment-report.pdf)
 
 ---
 
@@ -178,5 +179,10 @@ Diagram Link in [Draw.io](https://tinyurl.com/amj2ubpd)
 ---
 
 ## **Postman Collection**  
-The full API endpoint details can be accessed in the [Postman Collection Repository](https://github.com/Mtech-Assignment/scalable-services/tree/main/services-api-postman-collection).  
+The full API endpoint details can be accessed in the [Postman Collection Repository](https://github.com/Mtech-Assignment/scalable-services/tree/main/services-api-postman-collection). 
+
+---
+
+## **Deployment on Kubernetes**  
+Refer this report for the deployment of the application in K8S [Deployment Report](https://github.com/Mtech-Assignment/scalable-services/blob/main/ScalalbeAssignment2-Microservice-deployment-report.pdf)
 
