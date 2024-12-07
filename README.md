@@ -8,13 +8,15 @@
 **Batch**: 2YB  
 **Team Members**:  
 - Chandan Kumar Shaw  
-- Shoaib Ansari  
+- Shoib Ansari  
 - Prashant  
 - Deepak Kumar Sah
  
 ---
 
 ## **Repository**  
+[DockerHub](https://hub.docker.com/repositories/shoib) <br/>
+[P2P frontend Link](https://github.com/Mtech-Assignment/p2pfrontend)<br/>
 [GitHub Repository Link](https://github.com/Mtech-Assignment/scalable-services)<br />
 [Deployment Report](https://github.com/Mtech-Assignment/scalable-services/blob/main/ScalalbeAssignment2-Microservice-deployment-report.pdf)
 
