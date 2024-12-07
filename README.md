@@ -179,6 +179,11 @@ Diagram Link in [Draw.io](https://tinyurl.com/amj2ubpd)
 - Public endpoint `/listings` retrieves all listed assets.
 
 ---
+## **FrontEnd Example**
+<img width="1512" alt="image" src="https://github.com/user-attachments/assets/38604408-6ff9-4281-ac93-9ef396ee2c52">
+
+
+---
 
 ## **Postman Collection**  
 The full API endpoint details can be accessed in the [Postman Collection Repository](https://github.com/Mtech-Assignment/scalable-services/tree/main/services-api-postman-collection). 
