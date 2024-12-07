@@ -16,7 +16,7 @@
 
 ## **Repository**  
 [DockerHub](https://hub.docker.com/repositories/shoib) <br/>
-[P2P frontend Link](https://github.com/Mtech-Assignment/p2pfrontend)<br/>
+[Frontend Repo Link](https://github.com/Mtech-Assignment/p2pfrontend)<br/>
 [GitHub Repository Link](https://github.com/Mtech-Assignment/scalable-services)<br />
 [Deployment Report](https://github.com/Mtech-Assignment/scalable-services/blob/main/ScalalbeAssignment2-Microservice-deployment-report.pdf)
 
@@ -179,7 +179,7 @@ Diagram Link in [Draw.io](https://tinyurl.com/amj2ubpd)
 - Public endpoint `/listings` retrieves all listed assets.
 
 ---
-## **FrontEnd Example**
+## **FrontEnd Dashboard**
 <img width="1512" alt="image" src="https://github.com/user-attachments/assets/38604408-6ff9-4281-ac93-9ef396ee2c52">
 
 
